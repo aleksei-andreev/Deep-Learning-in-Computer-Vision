@@ -5,6 +5,7 @@ This module contains an image viewer and drawing routines based on OpenCV.
 import numpy as np
 import cv2
 import time
+import sys
 
 
 def is_in_bounds(mat, roi):
@@ -56,6 +57,10 @@ def view_roi(mat, roi):
         return mat[sy:ey, sx:ex]
     else:
         return mat[sy:ey, sx:ex, :]
+
+
+def colab():
+    return "ipykernel" in sys.modules
 
 
 class ImageViewer(object):
@@ -110,7 +115,16 @@ class ImageViewer(object):
         self._color = (0, 0, 0)
         self.text_color = (255, 255, 255)
         self.thickness = 1
-
+        
+        self.frames_per_sec_pos = (10, 33)
+        self.frames_per_sec_clr = (0, 0, 255)
+        self.colab = colab()
+        if self.colab:
+            global Image
+            from IPython.display import Image, DisplayHandle
+            self.disp_hand = DisplayHandle()
+            self.on_start = True
+    
     @property
     def color(self):
         return self._color
@@ -152,6 +166,11 @@ class ImageViewer(object):
             cv2.rectangle(self.image, pt1, pt2, self._color, -1)
             cv2.putText(self.image, label, center, cv2.FONT_HERSHEY_PLAIN,
                         1, (255, 255, 255), self.thickness)
+
+    def frames_per_sec(self, time):
+        frames_per_sec = f"Frames Per Second: {1 / time:.1f}"
+        cv2.putText(self.image, frames_per_sec, self.frames_per_sec_pos, cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), self.thickness * 2)
+        cv2.putText(self.image, frames_per_sec, self.frames_per_sec_pos, cv2.FONT_HERSHEY_SIMPLEX, 2, self.frames_per_sec_clr, self.thickness)
 
     def circle(self, x, y, radius, label=None):
         """Draw a circle.
@@ -308,19 +327,29 @@ class ImageViewer(object):
                         cv2.resize(self.image, self._window_shape))
             t1 = time.time()
             remaining_time = max(1, int(self._update_ms - 1e3*(t1-t0)))
-            cv2.imshow(
-                self._caption, cv2.resize(self.image, self._window_shape[:2]))
-            key = cv2.waitKey(remaining_time)
-            if key & 255 == 27:  # ESC
-                print("terminating")
-                self._terminate = True
-            elif key & 255 == 32:  # ' '
-                print("toggeling pause: " + str(not is_paused))
-                is_paused = not is_paused
-            elif key & 255 == 115:  # 's'
-                print("stepping")
-                self._terminate = not self._user_fun()
-                is_paused = True
+            if self.colab:
+                _, r = cv2.imencode(".jpg", self.image)
+                if self.on_start:
+                    self.disp_hand.display(Image(r.tobytes()))
+                    self.on_start = False
+                else:
+                    self.disp_hand.update(Image(r.tobytes()))
+
+                key = cv2.waitKey(remaining_time)
+            else:
+                cv2.imshow(
+                    self._caption, cv2.resize(self.image, self._window_shape[:2]))
+                key = cv2.waitKey(remaining_time)
+                if key & 255 == 27:  # ESC
+                    print("terminating")
+                    self._terminate = True
+                elif key & 255 == 32:  # ' '
+                    print("toggeling pause: " + str(not is_paused))
+                    is_paused = not is_paused
+                elif key & 255 == 115:  # 's'
+                    print("stepping")
+                    self._terminate = not self._user_fun()
+                    is_paused = True
 
         # Due to a bug in OpenCV we must call imshow after destroying the
         # window. This will make the window appear again as soon as waitKey
@@ -328,9 +357,10 @@ class ImageViewer(object):
         #
         # see https://github.com/Itseez/opencv/issues/4535
         self.image[:] = 0
-        cv2.destroyWindow(self._caption)
-        cv2.waitKey(1)
-        cv2.imshow(self._caption, self.image)
+        if not self.colab:
+            cv2.destroyWindow(self._caption)
+            cv2.waitKey(1)
+            cv2.imshow(self._caption, self.image)
 
     def stop(self):
         """Stop the control loop.
