@@ -132,3 +132,6 @@ class Visualization(object):
             # self.viewer.gaussian(track.mean[:2], track.covariance[:2, :2],
             #                      label="%d" % track.track_id)
 #
+
+    def draw_frames_per_sec(self, time):
+        self.viewer.frames_per_sec(time)
