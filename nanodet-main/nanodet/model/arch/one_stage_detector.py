@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
+# import time
 
 import torch
 import torch.nn as nn
@@ -47,15 +47,18 @@ class OneStageDetector(nn.Module):
 
     def inference(self, meta):
         with torch.no_grad():
-            torch.cuda.synchronize()
-            time1 = time.time()
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+                # time1 = time.time()
             preds = self(meta["img"])
-            torch.cuda.synchronize()
-            time2 = time.time()
-            print("forward time: {:.3f}s".format((time2 - time1)), end=" | ")
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+                # time2 = time.time()
+            # print("forward time: {:.3f}s".format((time2 - time1)), end=" | ")
             results = self.head.post_process(preds, meta)
-            torch.cuda.synchronize()
-            print("decode time: {:.3f}s".format((time.time() - time2)), end=" | ")
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+            # print("decode time: {:.3f}s".format((time.time() - time2)), end=" | ")
         return results
 
     def forward_train(self, gt_meta):
