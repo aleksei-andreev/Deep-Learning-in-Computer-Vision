@@ -21,7 +21,7 @@ import torch
 from .rank_filter import rank_filter
 
 
-def load_model_weight(model, checkpoint, logger):
+def load_model_weight(model, checkpoint):
     state_dict = checkpoint["state_dict"].copy()
     for k in checkpoint["state_dict"]:
         # convert average model weights
@@ -42,18 +42,18 @@ def load_model_weight(model, checkpoint, logger):
     for k in state_dict:
         if k in model_state_dict:
             if state_dict[k].shape != model_state_dict[k].shape:
-                logger.log(
-                    "Skip loading parameter {}, required shape{}, "
-                    "loaded shape{}.".format(
-                        k, model_state_dict[k].shape, state_dict[k].shape
-                    )
-                )
+                # logger.log(
+                #     "Skip loading parameter {}, required shape{}, "
+                #     "loaded shape{}.".format(
+                #         k, model_state_dict[k].shape, state_dict[k].shape
+                #     )
+                # )
                 state_dict[k] = model_state_dict[k]
-        else:
-            logger.log("Drop parameter {}.".format(k))
+        # else:
+        #     logger.log("Drop parameter {}.".format(k))
     for k in model_state_dict:
         if not (k in state_dict):
-            logger.log("No param {}.".format(k))
+            # logger.log("No param {}.".format(k))
             state_dict[k] = model_state_dict[k]
     model.load_state_dict(state_dict, strict=False)
 
