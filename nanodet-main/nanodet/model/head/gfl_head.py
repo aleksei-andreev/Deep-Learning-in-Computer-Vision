@@ -7,7 +7,7 @@ import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
 
-from nanodet.util import (
+from nanodet-main.nanodet.util import (
     bbox2distance,
     distance2bbox,
     images_to_levels,
@@ -105,7 +105,7 @@ class GFLHead(nn.Module):
         conv_cfg=None,
         norm_cfg=dict(type="GN", num_groups=32, requires_grad=True),
         reg_max=16,
-        ignore_iof_thr=-1,
+        # ignore_iof_thr=-1,
         **kwargs
     ):
         super(GFLHead, self).__init__()
@@ -121,13 +121,13 @@ class GFLHead(nn.Module):
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.use_sigmoid = self.loss_cfg.loss_qfl.use_sigmoid
-        self.ignore_iof_thr = ignore_iof_thr
+        # self.ignore_iof_thr = ignore_iof_thr
         if self.use_sigmoid:
             self.cls_out_channels = num_classes
         else:
             self.cls_out_channels = num_classes + 1
 
-        self.assigner = ATSSAssigner(topk=9, ignore_iof_thr=ignore_iof_thr)
+        self.assigner = ATSSAssigner(topk=9)
         self.distribution_project = Integral(self.reg_max)
 
         self.loss_qfl = QualityFocalLoss(
@@ -211,7 +211,8 @@ class GFLHead(nn.Module):
         )
         device = cls_scores.device
         gt_bboxes = gt_meta["gt_bboxes"]
-        gt_bboxes_ignore = gt_meta["gt_bboxes_ignore"]
+        # gt_bboxes_ignore = gt_meta["gt_bboxes_ignore"]
+        gt_bboxes_ignore = None
         gt_labels = gt_meta["gt_labels"]
         input_height, input_width = gt_meta["img"].shape[2:]
 
@@ -467,8 +468,8 @@ class GFLHead(nn.Module):
         gt_bboxes = torch.from_numpy(gt_bboxes).to(device)
         gt_labels = torch.from_numpy(gt_labels).to(device)
 
-        if gt_bboxes_ignore is not None:
-            gt_bboxes_ignore = torch.from_numpy(gt_bboxes_ignore).to(device)
+        # if gt_bboxes_ignore is not None:
+        #    gt_bboxes_ignore = torch.from_numpy(gt_bboxes_ignore).to(device)
 
         assign_result = self.assigner.assign(
             grid_cells, num_level_cells, gt_bboxes, gt_bboxes_ignore, gt_labels
@@ -654,7 +655,7 @@ class GFLHead(nn.Module):
         h, w = featmap_size
         x_range = (torch.arange(w, dtype=dtype, device=device) + 0.5) * stride
         y_range = (torch.arange(h, dtype=dtype, device=device) + 0.5) * stride
-        y, x = torch.meshgrid(y_range, x_range)
+        y, x = torch.meshgrid(y_range, x_range, indexing="ij")
         if flatten:
             y = y.flatten()
             x = x.flatten()
