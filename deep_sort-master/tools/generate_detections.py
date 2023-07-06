@@ -4,7 +4,11 @@ import errno
 import argparse
 import numpy as np
 import cv2
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+tf.logging.set_verbosity(tf.logging.ERROR)
+tf.disable_v2_behavior()
+config = tf.ConfigProto(device_count = {"GPU" : 0})
 
 
 def _run_in_batches(f, data_dict, out, batch_size):
@@ -55,7 +59,8 @@ def extract_image_patch(image, bbox, patch_shape):
 
     # convert to top left, bottom right
     bbox[2:] += bbox[:2]
-    bbox = bbox.astype(np.int)
+    # bbox = bbox.astype(np.int)
+    bbox = bbox.astype(int)
 
     # clip at image boundaries
     bbox[:2] = np.maximum(0, bbox[:2])
@@ -72,7 +77,8 @@ class ImageEncoder(object):
 
     def __init__(self, checkpoint_filename, input_name="images",
                  output_name="features"):
-        self.session = tf.Session()
+        # self.session = tf.Session()
+        self.session = tf.Session(config=config)
         with tf.gfile.GFile(checkpoint_filename, "rb") as file_handle:
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(file_handle.read())
@@ -159,9 +165,12 @@ def generate_detections(encoder, mot_dir, output_dir, detection_dir=None):
         detections_in = np.loadtxt(detection_file, delimiter=',')
         detections_out = []
 
-        frame_indices = detections_in[:, 0].astype(np.int)
-        min_frame_idx = frame_indices.astype(np.int).min()
-        max_frame_idx = frame_indices.astype(np.int).max()
+        # frame_indices = detections_in[:, 0].astype(np.int)
+        # min_frame_idx = frame_indices.astype(np.int).min()
+        # max_frame_idx = frame_indices.astype(np.int).max()
+        frame_indices = detections_in[:, 0].astype(int)
+        min_frame_idx = frame_indices.astype(int).min()
+        max_frame_idx = frame_indices.astype(int).max()
         for frame_idx in range(min_frame_idx, max_frame_idx + 1):
             print("Frame %05d/%05d" % (frame_idx, max_frame_idx))
             mask = frame_indices == frame_idx
