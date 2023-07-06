@@ -7,8 +7,12 @@ import random
 import cv2
 import numpy as np
 
+# __all__ = [
+#     "mkdir", "nms", "multiclass_nms", "demo_postprocess", "random_color", "visualize_assign"
+# ]
+
 __all__ = [
-    "mkdir", "nms", "multiclass_nms", "demo_postprocess", "random_color", "visualize_assign"
+    "mkdir", "nms", "multiclass_nms", "demo_postprocess"
 ]
 
 
