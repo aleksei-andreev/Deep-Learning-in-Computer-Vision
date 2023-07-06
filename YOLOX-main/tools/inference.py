@@ -90,7 +90,7 @@ class Predictor(object):
         # ratio = img_info["ratio"]
         # img = img_info["raw_img"]
         # if output is None:
-            return img
+        #    return img
         output = output[0].cpu().detach().numpy()
         output = output[output[:, 6] == 0]
 
