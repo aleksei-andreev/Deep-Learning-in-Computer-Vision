@@ -3,9 +3,11 @@
 # Copyright (c) Megvii, Inc. and its affiliates.
 
 import os
-
+import sys
 from yolox.exp import Exp as MyExp
 
+MAIN_PATH = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(MAIN_PATH))
 
 class Exp(MyExp):
     def __init__(self):
