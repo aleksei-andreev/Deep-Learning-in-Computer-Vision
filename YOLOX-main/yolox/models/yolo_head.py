@@ -31,7 +31,7 @@ class YOLOXHead(nn.Module):
             depthwise (bool): whether apply depthwise conv in conv branch. Defalut value: False.
         """
         super().__init__()
-
+        self.n_anchors = 1
         self.num_classes = num_classes
         self.decode_in_inference = True  # for deploy, set to False
 
@@ -96,7 +96,7 @@ class YOLOXHead(nn.Module):
             self.cls_preds.append(
                 nn.Conv2d(
                     in_channels=int(256 * width),
-                    out_channels=self.num_classes,
+                    out_channels=self.n_anchors * self.num_classes,
                     kernel_size=1,
                     stride=1,
                     padding=0,
@@ -114,7 +114,7 @@ class YOLOXHead(nn.Module):
             self.obj_preds.append(
                 nn.Conv2d(
                     in_channels=int(256 * width),
-                    out_channels=1,
+                    out_channels=self.n_anchors * 1,
                     kernel_size=1,
                     stride=1,
                     padding=0,
@@ -130,12 +130,12 @@ class YOLOXHead(nn.Module):
 
     def initialize_biases(self, prior_prob):
         for conv in self.cls_preds:
-            b = conv.bias.view(1, -1)
+            b = conv.bias.view(self.n_anchors, -1)
             b.data.fill_(-math.log((1 - prior_prob) / prior_prob))
             conv.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
 
         for conv in self.obj_preds:
-            b = conv.bias.view(1, -1)
+            b = conv.bias.view(self.n_anchors, -1)
             b.data.fill_(-math.log((1 - prior_prob) / prior_prob))
             conv.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
 
@@ -176,7 +176,7 @@ class YOLOXHead(nn.Module):
                     batch_size = reg_output.shape[0]
                     hsize, wsize = reg_output.shape[-2:]
                     reg_output = reg_output.view(
-                        batch_size, 1, 4, hsize, wsize
+                        batch_size, self.n_anchors, 4, hsize, wsize
                     )
                     reg_output = reg_output.permute(0, 1, 3, 4, 2).reshape(
                         batch_size, -1, 4
@@ -223,9 +223,9 @@ class YOLOXHead(nn.Module):
             grid = torch.stack((xv, yv), 2).view(1, 1, hsize, wsize, 2).type(dtype)
             self.grids[k] = grid
 
-        output = output.view(batch_size, 1, n_ch, hsize, wsize)
+        output = output.view(batch_size, self.n_anchors, n_ch, hsize, wsize)
         output = output.permute(0, 1, 3, 4, 2).reshape(
-            batch_size, hsize * wsize, -1
+            batch_size, self.n_anchors * hsize * wsize, -1
         )
         grid = grid.view(1, -1, 2)
         output[..., :2] = (output[..., :2] + grid) * stride
@@ -245,11 +245,13 @@ class YOLOXHead(nn.Module):
         grids = torch.cat(grids, dim=1).type(dtype)
         strides = torch.cat(strides, dim=1).type(dtype)
 
-        outputs = torch.cat([
-            (outputs[..., 0:2] + grids) * strides,
-            torch.exp(outputs[..., 2:4]) * strides,
-            outputs[..., 4:]
-        ], dim=-1)
+        # outputs = torch.cat([
+        #     (outputs[..., 0:2] + grids) * strides,
+        #     torch.exp(outputs[..., 2:4]) * strides,
+        #     outputs[..., 4:]
+        # ], dim=-1)
+        outputs[..., :2] = (outputs[..., :2] + grids) * strides
+        outputs[..., 2:4] = torch.exp(outputs[..., 2:4]) * strides
         return outputs
 
     def get_losses(
@@ -264,7 +266,7 @@ class YOLOXHead(nn.Module):
         dtype,
     ):
         bbox_preds = outputs[:, :, :4]  # [batch, n_anchors_all, 4]
-        obj_preds = outputs[:, :, 4:5]  # [batch, n_anchors_all, 1]
+        obj_preds = outputs[:, :, 4].unsqueeze(-1)  # [batch, n_anchors_all, 1]
         cls_preds = outputs[:, :, 5:]  # [batch, n_anchors_all, n_cls]
 
         # calculate targets
@@ -310,6 +312,7 @@ class YOLOXHead(nn.Module):
                     ) = self.get_assignments(  # noqa
                         batch_idx,
                         num_gt,
+                        total_num_anchors,
                         gt_bboxes_per_image,
                         gt_classes,
                         bboxes_preds_per_image,
@@ -317,14 +320,17 @@ class YOLOXHead(nn.Module):
                         x_shifts,
                         y_shifts,
                         cls_preds,
+                        bbox_preds,
                         obj_preds,
+                        labels,
+                        imgs,
                     )
                 except RuntimeError as e:
                     # TODO: the string might change, consider a better way
                     if "CUDA out of memory. " not in str(e):
                         raise  # RuntimeError might not caused by CUDA OOM
 
-                    logger.error(
+                    print(
                         "OOM RuntimeError is raised due to the huge memory cost during label assignment. \
                            CPU mode is applied in this batch. If you want to avoid this issue, \
                            try to reduce the batch size or image size."
@@ -339,6 +345,7 @@ class YOLOXHead(nn.Module):
                     ) = self.get_assignments(  # noqa
                         batch_idx,
                         num_gt,
+                        total_num_anchors,
                         gt_bboxes_per_image,
                         gt_classes,
                         bboxes_preds_per_image,
@@ -346,7 +353,10 @@ class YOLOXHead(nn.Module):
                         x_shifts,
                         y_shifts,
                         cls_preds,
+                        bbox_preds,
                         obj_preds,
+                        labels,
+                        imgs,
                         "cpu",
                     )
 
@@ -424,6 +434,7 @@ class YOLOXHead(nn.Module):
         self,
         batch_idx,
         num_gt,
+        total_num_anchors,
         gt_bboxes_per_image,
         gt_classes,
         bboxes_preds_per_image,
@@ -431,7 +442,10 @@ class YOLOXHead(nn.Module):
         x_shifts,
         y_shifts,
         cls_preds,
+        bbox_preds,
         obj_preds,
+        labels,
+        imgs,
         mode="gpu",
     ):
 
@@ -444,11 +458,14 @@ class YOLOXHead(nn.Module):
             x_shifts = x_shifts.cpu()
             y_shifts = y_shifts.cpu()
 
-        fg_mask, geometry_relation = self.get_geometry_constraint(
+        # fg_mask, geometry_relation = self.get_geometry_constraint(
+        fg_mask, bxs_cntr = self.get_bxs(
             gt_bboxes_per_image,
             expanded_strides,
             x_shifts,
             y_shifts,
+            total_num_anchors,
+            num_gt,
         )
 
         bboxes_preds_per_image = bboxes_preds_per_image[fg_mask]
@@ -465,6 +482,8 @@ class YOLOXHead(nn.Module):
         gt_cls_per_image = (
             F.one_hot(gt_classes.to(torch.int64), self.num_classes)
             .float()
+            .unsqueeze(1)
+            .repeat(1, num_in_boxes_anchor, 1)
         )
         pair_wise_ious_loss = -torch.log(pair_wise_ious + 1e-8)
 
@@ -472,20 +491,38 @@ class YOLOXHead(nn.Module):
             cls_preds_, obj_preds_ = cls_preds_.cpu(), obj_preds_.cpu()
 
         with torch.cuda.amp.autocast(enabled=False):
+            # cls_preds_ = (
+            #     cls_preds_.float().sigmoid_() * obj_preds_.float().sigmoid_()
+            # ).sqrt()
             cls_preds_ = (
-                cls_preds_.float().sigmoid_() * obj_preds_.float().sigmoid_()
-            ).sqrt()
+                cls_preds_.float().unsqueeze(0).repeat(num_gt, 1, 1).sigmoid_() * obj_preds_.float().unsqueeze(0).repeat(num_gt, 1, 1).sigmoid_()
+            )
+            # pair_wise_cls_loss = F.binary_cross_entropy(
+            #     cls_preds_.unsqueeze(0).repeat(num_gt, 1, 1),
+            #     gt_cls_per_image.unsqueeze(1).repeat(1, num_in_boxes_anchor, 1),
+            #     reduction="none"
+            # ).sum(-1)
             pair_wise_cls_loss = F.binary_cross_entropy(
-                cls_preds_.unsqueeze(0).repeat(num_gt, 1, 1),
-                gt_cls_per_image.unsqueeze(1).repeat(1, num_in_boxes_anchor, 1),
-                reduction="none"
+                cls_preds_.sqrt_(), gt_cls_per_image, reduction="none"
             ).sum(-1)
         del cls_preds_
 
+        # cost = (
+        #     pair_wise_cls_loss
+        #     + 3.0 * pair_wise_ious_loss
+        #     + float(1e6) * (~geometry_relation)
+        # )
+
+        # (
+        #     num_fg,
+        #     gt_matched_classes,
+        #     pred_ious_this_matching,
+        #     matched_gt_inds,
+        # ) = self.simota_matching(cost, pair_wise_ious, gt_classes, num_gt, fg_mask)
         cost = (
             pair_wise_cls_loss
             + 3.0 * pair_wise_ious_loss
-            + float(1e6) * (~geometry_relation)
+            + float(1e5) * (~bxs_cntr)
         )
 
         (
@@ -493,7 +530,7 @@ class YOLOXHead(nn.Module):
             gt_matched_classes,
             pred_ious_this_matching,
             matched_gt_inds,
-        ) = self.simota_matching(cost, pair_wise_ious, gt_classes, num_gt, fg_mask)
+        ) = self.dyn_k_matching(cost, pair_wise_ious, gt_classes, num_gt, fg_mask)
         del pair_wise_cls_loss, cost, pair_wise_ious, pair_wise_ious_loss
 
         if mode == "cpu":
@@ -541,6 +578,40 @@ class YOLOXHead(nn.Module):
 
         return anchor_filter, geometry_relation
 
+    def get_bxs(self, gt_bboxes_per_image, expanded_strides, x_shifts, y_shifts, total_num_anchors, num_gt):
+        expanded_strides_per_image = expanded_strides[0]
+        x_shifts_per_image = x_shifts[0] * expanded_strides_per_image
+        y_shifts_per_image = y_shifts[0] * expanded_strides_per_image
+        x_centers_per_image = ((x_shifts_per_image + 0.5 * expanded_strides_per_image).unsqueeze(0).repeat(num_gt, 1))
+        y_centers_per_image = ((y_shifts_per_image + 0.5 * expanded_strides_per_image).unsqueeze(0).repeat(num_gt, 1))
+        gt_bboxes_per_image_left = ((gt_bboxes_per_image[:, 0] - 0.5 * gt_bboxes_per_image[:, 2]).unsqueeze(1).repeat(1, total_num_anchors))
+        gt_bboxes_per_image_right = ((gt_bboxes_per_image[:, 0] + 0.5 * gt_bboxes_per_image[:, 2]).unsqueeze(1).repeat(1, total_num_anchors))
+        gt_bboxes_per_image_top = ((gt_bboxes_per_image[:, 1] - 0.5 * gt_bboxes_per_image[:, 3]).unsqueeze(1).repeat(1, total_num_anchors))
+        gt_bboxes_per_image_bottom = ((gt_bboxes_per_image[:, 1] + 0.5 * gt_bboxes_per_image[:, 3]).unsqueeze(1).repeat(1, total_num_anchors))
+        b_left = x_centers_per_image - gt_bboxes_per_image_left
+        b_right = gt_bboxes_per_image_right - x_centers_per_image
+        b_top = y_centers_per_image - gt_bboxes_per_image_top
+        b_bottom = gt_bboxes_per_image_bottom - y_centers_per_image
+        bbox_dlts = torch.stack([b_left, b_top, b_right, b_bottom], 2)
+        bxs = bbox_dlts.min(dim=-1).values > 0.0
+        all_bxs = bxs.sum(dim=0) > 0
+        center_radius = 2.5
+        gt_bboxes_per_image_left = (gt_bboxes_per_image[:, 0]).unsqueeze(1).repeat(1, total_num_anchors) - center_radius * expanded_strides_per_image.unsqueeze(0)
+        gt_bboxes_per_image_right = (gt_bboxes_per_image[:, 0]).unsqueeze(1).repeat(1, total_num_anchors) + center_radius * expanded_strides_per_image.unsqueeze(0)
+        gt_bboxes_per_image_top = (gt_bboxes_per_image[:, 1]).unsqueeze(1).repeat(1, total_num_anchors) - center_radius * expanded_strides_per_image.unsqueeze(0)
+        gt_bboxes_per_image_bottom = (gt_bboxes_per_image[:, 1]).unsqueeze(1).repeat(1, total_num_anchors) + center_radius * expanded_strides_per_image.unsqueeze(0)
+
+        c_left = x_centers_per_image - gt_bboxes_per_image_left
+        c_right = gt_bboxes_per_image_right - x_centers_per_image
+        c_top = y_centers_per_image - gt_bboxes_per_image_top
+        c_bottom = gt_bboxes_per_image_bottom - y_centers_per_image
+        center_dlts = torch.stack([c_left, c_top, c_right, c_bottom], 2)
+        cntrs = center_dlts.min(dim=-1).values > 0.0
+        all_cntrs = cntrs.sum(dim=0) > 0
+        bxs_anchor = all_bxs | all_cntrs
+        bxs_cntr = (bxs[:, bxs_anchor] & cntrs[:, bxs_anchor])
+        return bxs_anchor, bxs_cntr
+
     def simota_matching(self, cost, pair_wise_ious, gt_classes, num_gt, fg_mask):
         matching_matrix = torch.zeros_like(cost, dtype=torch.uint8)
 
@@ -563,6 +634,40 @@ class YOLOXHead(nn.Module):
             matching_matrix[:, multiple_match_mask] *= 0
             matching_matrix[cost_argmin, multiple_match_mask] = 1
         fg_mask_inboxes = anchor_matching_gt > 0
+        num_fg = fg_mask_inboxes.sum().item()
+
+        fg_mask[fg_mask.clone()] = fg_mask_inboxes
+
+        matched_gt_inds = matching_matrix[:, fg_mask_inboxes].argmax(0)
+        gt_matched_classes = gt_classes[matched_gt_inds]
+
+        pred_ious_this_matching = (matching_matrix * pair_wise_ious).sum(0)[
+            fg_mask_inboxes
+        ]
+        return num_fg, gt_matched_classes, pred_ious_this_matching, matched_gt_inds
+
+    def dyn_k_matching(self, cost, pair_wise_ious, gt_classes, num_gt, fg_mask):
+        matching_matrix = torch.zeros_like(cost, dtype=torch.uint8)
+        
+        n_candidate_k = min(10, pair_wise_ious.size(1))
+        topk_ious, _ = torch.topk(pair_wise_ious, n_candidate_k, dim=1)
+        dynamic_ks = torch.clamp(topk_ious.sum(1).int(), min=1)
+        dynamic_ks = dynamic_ks.tolist()
+        for gt_idx in range(num_gt):
+            _, pos_idx = torch.topk(
+                cost[gt_idx], k=dynamic_ks[gt_idx], largest=False
+            )
+            matching_matrix[gt_idx][pos_idx] = 1
+
+        del topk_ious, dynamic_ks, pos_idx
+
+        anchor_matching_gt = matching_matrix.sum(0)
+        if (anchor_matching_gt > 1).sum() > 0:
+            multiple_match_mask = anchor_matching_gt > 1
+            _, cost_argmin = torch.min(cost[:, multiple_match_mask], dim=0)
+            matching_matrix[:, multiple_match_mask] *= 0
+            matching_matrix[cost_argmin, multiple_match_mask] = 1
+        fg_mask_inboxes = matching_matrix.sum(0) > 0
         num_fg = fg_mask_inboxes.sum().item()
 
         fg_mask[fg_mask.clone()] = fg_mask_inboxes
