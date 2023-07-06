@@ -29,8 +29,7 @@ _CKPT_FULL_PATH = {
 }
 
 
-def create_yolox_model(name: str, pretrained: bool = True, num_classes: int = 80, device=None,
-                       exp_path: str = None, ckpt_path: str = None) -> nn.Module:
+def create_yolox_model(name: str, pretrained: bool = True, num_classes: int = 80, device=None) -> nn.Module:
     """creates and loads a YOLOX model
 
     Args:
