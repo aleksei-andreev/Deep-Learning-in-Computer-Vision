@@ -10,7 +10,7 @@ from tabulate import tabulate
 import torch
 from torch.nn import Module
 
-from yolox.utils import LRScheduler
+from YOLOX-main.yolox.utils import LRScheduler
 
 
 class BaseExp(metaclass=ABCMeta):
@@ -21,14 +21,14 @@ class BaseExp(metaclass=ABCMeta):
         self.output_dir = "./YOLOX_outputs"
         self.print_interval = 100
         self.eval_interval = 10
-        self.dataset = None
+        # self.dataset = None
 
     @abstractmethod
     def get_model(self) -> Module:
-        pass
+        # pass
 
-    @abstractmethod
-    def get_dataset(self, cache: bool = False, cache_type: str = "ram"):
+    # @abstractmethod
+    # def get_dataset(self, cache: bool = False, cache_type: str = "ram"):
         pass
 
     @abstractmethod
