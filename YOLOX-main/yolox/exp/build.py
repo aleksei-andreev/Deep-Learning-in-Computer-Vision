@@ -9,7 +9,7 @@ import sys
 
 def get_exp_by_file(exp_file):
     try:
-        sys.path.append(os.path.dirname(exp_file))
+        sys.path.append(os.path.join(os.getcwd(), os.path.dirname(exp_file)))
         current_exp = importlib.import_module(os.path.basename(exp_file).split(".")[0])
         exp = current_exp.Exp()
     except Exception:
