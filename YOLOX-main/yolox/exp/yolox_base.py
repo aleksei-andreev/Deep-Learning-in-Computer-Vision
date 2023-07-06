@@ -10,7 +10,7 @@ import torch.nn as nn
 
 from .base_exp import BaseExp
 
-__all__ = ["Exp", "check_exp_value"]
+# __all__ = ["Exp", "check_exp_value"]
 
 
 class Exp(BaseExp):
@@ -152,7 +152,7 @@ class Exp(BaseExp):
             cache_type=cache_type,
         )
 
-    def get_data_loader(self, batch_size, is_distributed, no_aug=False, cache_img: str = None):
+    def get_data_loader(self, batch_size, is_distributed, no_aug=False, cache_img=False):
         """
         Get dataloader according to cache_img parameter.
         Args:
@@ -169,19 +169,31 @@ class Exp(BaseExp):
             InfiniteSampler,
             MosaicDetection,
             worker_init_reset_seed,
+            COCODataset
         )
         from yolox.utils import wait_for_the_master
 
         # if cache is True, we will create self.dataset before launch
         # else we will create self.dataset after launch
-        if self.dataset is None:
-            with wait_for_the_master():
-                assert cache_img is None, \
-                    "cache_img must be None if you didn't create self.dataset before launch"
-                self.dataset = self.get_dataset(cache=False, cache_type=cache_img)
+        # if self.dataset is None:
+        with wait_for_the_master():
+            dataset = COCODataset(
+                data_dir=self.data_dir,
+                json_file=self.train_ann,
+                img_size=self.input_size,
+                preproc=TrainTransform(
+                    max_labels=50,
+                    flip_prob=self.flip_prob,
+                    hsv_prob=self.hsv_prob),
+                cache=cache_img,
+            )
+                
+                # assert cache_img is None, \
+                #     "cache_img must be None if you didn't create self.dataset before launch"
+                # self.dataset = self.get_dataset(cache=False, cache_type=cache_img)
 
-        self.dataset = MosaicDetection(
-            dataset=self.dataset,
+        dataset = MosaicDetection(
+            dataset,
             mosaic=not no_aug,
             img_size=self.input_size,
             preproc=TrainTransform(
@@ -197,7 +209,7 @@ class Exp(BaseExp):
             mosaic_prob=self.mosaic_prob,
             mixup_prob=self.mixup_prob,
         )
-
+        self.dataset = dataset
         if is_distributed:
             batch_size = batch_size // dist.get_world_size()
 
@@ -309,9 +321,15 @@ class Exp(BaseExp):
             preproc=ValTransform(legacy=legacy),
         )
 
-    def get_eval_loader(self, batch_size, is_distributed, **kwargs):
-        valdataset = self.get_eval_dataset(**kwargs)
-
+    def get_eval_loader(self, batch_size, is_distributed, testdev=False, legacy=False):
+        from yolox.data import COCODataset, ValTransform
+        valdataset = COCODataset(
+            data_dir=self.data_dir,
+            json_file=self.val_ann if not testdev else self.test_ann,
+            name="val2017" if not testdev else "test2017",
+            img_size=self.test_size,
+            preproc=ValTransform(legacy=legacy),
+        )
         if is_distributed:
             batch_size = batch_size // dist.get_world_size()
             sampler = torch.utils.data.distributed.DistributedSampler(
@@ -349,8 +367,8 @@ class Exp(BaseExp):
         # NOTE: trainer shouldn't be an attribute of exp object
         return trainer
 
-    def eval(self, model, evaluator, is_distributed, half=False, return_outputs=False):
-        return evaluator.evaluate(model, is_distributed, half, return_outputs=return_outputs)
+    def eval(self, model, evaluator, is_distributed, half=False):
+        return evaluator.evaluate(model, is_distributed, half)
 
 
 def check_exp_value(exp: Exp):
