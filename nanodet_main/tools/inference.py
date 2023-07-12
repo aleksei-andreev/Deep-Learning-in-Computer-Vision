@@ -19,12 +19,12 @@ import time
 import cv2
 import torch
 
-from nanodet-main.nanodet.data.transform import Pipeline
-from nanodet-main.nanodet.model.arch import build_model
-from nanodet-main.nanodet.util import load_model_weight
-from nanodet-main.nanodet.util import cfg
-from nanodet-main.nanodet.data.collate import naive_collate
-from nanodet-main.nanodet.data.batch_process import stack_batch_img
+from nanodet_main.nanodet.data.transform import Pipeline
+from nanodet_main.nanodet.model.arch import build_model
+from nanodet_main.nanodet.util import load_model_weight
+from nanodet_main.nanodet.util import cfg
+from nanodet_main.nanodet.data.collate import naive_collate
+from nanodet_main.nanodet.data.batch_process import stack_batch_img
 
 
 class Predictor(object):

@@ -5,17 +5,17 @@ from torchreid.utils import FeatureExtractor
 from detectron2 import model_zoo
 from detectron2.engine import DefaultPredictor
 from detectron2.config import get_cfg
-from nanodet-main.nanodet.util import cfg, load_config
-from nanodet-main.tools.inference import Predictor
-from YOLOX-main.yolox.exp.build import get_exp_by_file
-from YOLOX-main.tools.inference import Predictor
+from nanodet_main.nanodet.util import cfg, load_config
+from nanodet_main.tools.inference import Predictor
+from YOLOX_main.yolox.exp.build import get_exp_by_file
+from YOLOX_main.tools.inference import Predictor
 
 det_choice = {
   0: {"model":"None", "config":"None", "descr":"MOT benchmarks", "short":"MOT"},
-  1: {"model":"model_weights/nanodet-plus-m_416.pth", "config":"nanodet-main/config/nanodet-plus-m_416.yml", "descr":"NanoDet-Plus-M", "short":"nanodet_plus_m"},
-  2: {"model":"model_weights/nanodet-plus-m-1.5x_416.pth", "config":"nanodet-main/config/nanodet-plus-m-1.5x_416.yml", "descr":"NanoDet-Plus-M-1.5x", "nanodet_plus_m_1.5x"},
-  3: {"model":"model_weights/yolox_tiny.pth", "config":"YOLOX-main/exps/default/yolox_tiny.py", "descr":"YOLOX-Tiny", "short":"yolox_tiny"},
-  4: {"model":"model_weights/yolox_l.pth", "config":"YOLOX-main/exps/default/yolox_l.py", "descr":"YOLOX-Large", "short":"yolox_l"},
+  1: {"model":"model_weights/nanodet-plus-m_416.pth", "config":"nanodet_main/config/nanodet-plus-m_416.yml", "descr":"NanoDet-Plus-M", "short":"nanodet_plus_m"},
+  2: {"model":"model_weights/nanodet-plus-m-1.5x_416.pth", "config":"nanodet_main/config/nanodet-plus-m-1.5x_416.yml", "descr":"NanoDet-Plus-M-1.5x", "nanodet_plus_m_1.5x"},
+  3: {"model":"model_weights/yolox_tiny.pth", "config":"YOLOX_main/exps/default/yolox_tiny.py", "descr":"YOLOX-Tiny", "short":"yolox_tiny"},
+  4: {"model":"model_weights/yolox_l.pth", "config":"YOLOX_main/exps/default/yolox_l.py", "descr":"YOLOX-Large", "short":"yolox_l"},
   5: {"model":"model_weights/mask_rcnn.pk1", "config":"COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml", "descr":"Mask R-CNN (R50-FPN)", "short":"mask_rcnn"},
   6: {"model":"model_weights/cascade_mask_rcnn.pk1", "config":"Misc/cascade_mask_rcnn_R_50_FPN_3x.yaml", "descr":"Cascade Mask R-CNN (R50-FPN)", "short":"cascade_mask_rcnn"}
 }

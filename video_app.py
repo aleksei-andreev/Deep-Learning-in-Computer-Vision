@@ -6,12 +6,12 @@ import os
 from time import time
 import cv2
 import numpy as np
-from deep_sort-master.application_util import preprocessing
-from deep_sort-master.application_util import visualization
-from deep_sort-master.deep_sort import nn_matching
-from deep_sort-master.deep_sort.detection import Detection
-from deep_sort-master.deep_sort.tracker import Tracker
-import deep_sort-master.tools.generate_detections as gd
+from deep_sort_master.application_util import preprocessing
+from deep_sort_master.application_util import visualization
+from deep_sort_master.deep_sort import nn_matching
+from deep_sort_master.deep_sort.detection import Detection
+from deep_sort_master.deep_sort.tracker import Tracker
+import deep_sort_master.tools.generate_detections as gd
 from inference import FeatureExtractorCustom as fec
 import inference as infr
 

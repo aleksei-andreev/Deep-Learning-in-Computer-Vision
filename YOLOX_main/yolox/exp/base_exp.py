@@ -10,7 +10,7 @@ from tabulate import tabulate
 import torch
 from torch.nn import Module
 
-from YOLOX-main.yolox.utils import LRScheduler
+from YOLOX_main.yolox.utils import LRScheduler
 
 
 class BaseExp(metaclass=ABCMeta):

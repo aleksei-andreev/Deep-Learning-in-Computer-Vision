@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from nanodet-main.nanodet.util import bbox2distance, distance2bbox, multi_apply, overlay_bbox_cv
+from nanodet_main.nanodet.util import bbox2distance, distance2bbox, multi_apply, overlay_bbox_cv
 
 from ...data.transform.warp import warp_boxes
 from ..loss.gfocal_loss import DistributionFocalLoss, QualityFocalLoss

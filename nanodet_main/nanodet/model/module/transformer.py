@@ -14,8 +14,8 @@
 
 import torch.nn as nn
 
-from nanodet-main.nanodet.model.module.activation import act_layers
-from nanodet-main.nanodet.model.module.conv import ConvModule
+from nanodet_main.nanodet.model.module.activation import act_layers
+from nanodet_main.nanodet.model.module.conv import ConvModule
 
 
 class MLP(nn.Module):

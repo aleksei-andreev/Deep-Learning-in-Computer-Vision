@@ -15,7 +15,7 @@
 
 import torch
 
-from nanodet-main.nanodet.util import util_mixins
+from nanodet_main.nanodet.util import util_mixins
 
 
 class AssignResult(util_mixins.NiceRepr):

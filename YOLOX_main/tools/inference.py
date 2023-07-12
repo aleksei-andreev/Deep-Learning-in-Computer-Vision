@@ -12,10 +12,10 @@ import cv2
 
 import torch
 
-from YOLOX-main.yolox.data.data_augment import ValTransform
-from YOLOX-main.yolox.data.datasets import COCO_CLASSES
-from YOLOX-main.yolox.exp import get_exp
-from YOLOX-main.yolox.utils import fuse_model, get_model_info, postprocess, vis
+from YOLOX_main.yolox.data.data_augment import ValTransform
+from YOLOX_main.yolox.data.datasets import COCO_CLASSES
+from YOLOX_main.yolox.exp import get_exp
+from YOLOX_main.yolox.utils import fuse_model, get_model_info, postprocess, vis
 
 IMAGE_EXT = [".jpg", ".jpeg", ".webp", ".bmp", ".png"]
 
