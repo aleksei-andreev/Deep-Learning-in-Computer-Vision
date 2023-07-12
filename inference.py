@@ -14,8 +14,8 @@ det_choice = {
   2: {"model":"weights/nanodet-plus-m-1.5x_416.pth", "config":"nanodet_main/config/nanodet-plus-m-1.5x_416.yml", "descr":"NanoDet-Plus-Medium-1.5x", "short":"nanodet_plus_m_1.5x"},
   3: {"model":"weights/yolox_tiny.pth", "config":"YOLOX_main/exps/default/yolox_tiny.py", "descr":"YOLOX-Tiny", "short":"yolox_tiny"},
   4: {"model":"weights/yolox_l.pth", "config":"YOLOX_main/exps/default/yolox_l.py", "descr":"YOLOX-Large", "short":"yolox_l"},
-  5: {"model":"weights/mask_rcnn.pk1", "config":"COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml", "descr":"Mask R-CNN (R50-FPN)", "short":"mask_rcnn"},
-  6: {"model":"weights/cascade_mask_rcnn.pk1", "config":"Misc/cascade_mask_rcnn_R_50_FPN_3x.yaml", "descr":"Cascade Mask R-CNN (R50-FPN)", "short":"cascade_mask_rcnn"}
+  5: {"model":"weights/mask_rcnn.pkl", "config":"COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml", "descr":"Mask R-CNN (R50-FPN)", "short":"mask_rcnn"},
+  6: {"model":"weights/cascade_mask_rcnn.pkl", "config":"Misc/cascade_mask_rcnn_R_50_FPN_3x.yaml", "descr":"Cascade Mask R-CNN (R50-FPN)", "short":"cascade_mask_rcnn"}
 }
 
 ext_choice = {
