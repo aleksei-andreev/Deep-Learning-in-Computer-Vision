@@ -91,7 +91,7 @@ class Predictor(object):
         # img = img_info["raw_img"]
         # if output is None:
         #    return img
-        output = output[0].cpu().detach().numpy()
+        output = outputs[0].cpu().detach().numpy()
         output = output[output[:, 6] == 0]
 
         bboxes = output[:, 0:4]
