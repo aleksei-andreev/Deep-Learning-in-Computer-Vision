@@ -268,9 +268,9 @@ def setup():
   det_mode = int(input(det_msg))
   if det_mode not in range(len(infr.det_choice)):
     print("Error. Not in range")
-  ext_msg = ("\n Make your choice among ReID models:\n" + "".join([f"{k}. {infr.ext_choice[k]['descr']}.\n" for k in ext_choice]))
+  ext_msg = ("\n Make your choice among ReID models:\n" + "".join([f"{k}. {infr.ext_choice[k]['descr']}.\n" for k in infr.ext_choice]))
   ext_mode = int(input(ext_msg))
-  if ext_mode not in range(len(ext_choice)):
+  if ext_mode not in range(len(infr.ext_choice)):
     print("Error. Not in range")
   if ext_mode == 0:
     enc = gd.create_box_encoder(infr.ext_choice["ext_mode"]["path"], batch_size=32)
