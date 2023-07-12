@@ -1,7 +1,7 @@
 # vim: expandtab:ts=4:sw=4
 import argparse
 import os
-import vid_app
+import video_app
 
 
 def parse_args(args=None):
@@ -51,7 +51,7 @@ def main(args):
         # print("Running sequence %s" % sequence)
         sequence_dir = os.path.join(args.mot_dir, sequence)
         # detection_file = os.path.join(args.detection_dir, "%s.npy" % sequence)
-        output_file = os.path.join(args.output_dir, "%s.txt" % sequence)'
+        output_file = os.path.join(args.output_dir, "%s.txt" % sequence)
         if not os.path.isdir(sequence_dir):
           continue
         print("Running sequence %s" % sequence)
