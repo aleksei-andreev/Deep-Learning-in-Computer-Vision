@@ -169,8 +169,8 @@ class ImageViewer(object):
 
     def frames_per_sec(self, time):
         frames_per_sec = f"Frames Per Second: {1 / time:.1f}"
-        cv2.putText(self.image, frames_per_sec, self.frames_per_sec_pos, cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), self.thickness * 2)
-        cv2.putText(self.image, frames_per_sec, self.frames_per_sec_pos, cv2.FONT_HERSHEY_SIMPLEX, 2, self.frames_per_sec_clr, self.thickness)
+        cv2.putText(self.image, frames_per_sec, self.frames_per_sec_pos, cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 0), self.thickness * 2)
+        cv2.putText(self.image, frames_per_sec, self.frames_per_sec_pos, cv2.FONT_HERSHEY_PLAIN, 2, self.frames_per_sec_clr, self.thickness)
 
     def circle(self, x, y, radius, label=None):
         """Draw a circle.
