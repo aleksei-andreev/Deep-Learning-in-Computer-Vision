@@ -4,7 +4,7 @@
 
 import os
 import sys
-from yolox.exp import Exp as MyExp
+from YOLOX_main.yolox.exp import Exp as MyExp
 
 MAIN_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(MAIN_PATH))
