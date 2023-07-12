@@ -140,8 +140,8 @@ def create_detections(detections, min_height=0):
 
 
 # def run(sequence_dir, detection_file, output_file, min_confidence,
-        nms_max_overlap, min_detection_height, max_cosine_distance,
-        nn_budget, display):
+#         nms_max_overlap, min_detection_height, max_cosine_distance,
+#         nn_budget, display):
 def run(mode, enc, sequence_dir, output_file, min_confidence,
         nms_max_overlap, min_detection_height, max_cosine_distance,
         nn_budget, display):
@@ -264,21 +264,21 @@ def bool_string(input_string):
 
 
 def setup():
-  det_msg = ("\nMake your choice among detection and segmentation models:\n" + "".join([f"{k}. {infr.det_choice[k]["descr"]}.\n" for k in det_choice]))
+  det_msg = ("\nMake your choice among detection and segmentation models:\n" + "".join([f"{k}. {infr.det_choice[k]['descr']}.\n" for k in det_choice]))
   det_mode = int(input(det_msg))
   if det_mode not in range(len(det_choice)):
     print("Error. Not in range")
-  ext_msg = ("\n Make your choice among ReID models:\n" + "".(join[f"{k}. {infr.ext_choice[k]["descr"]}.\n" for k in ext_choice]))
+  ext_msg = ("\n Make your choice among ReID models:\n" + "".join([f"{k}. {infr.ext_choice[k]['descr']}.\n" for k in ext_choice]))
   ext_mode = int(input(ext_msg))
   if ext_mode not in range(len(ext_choice)):
     print("Error. Not in range")
   if ext_mode == 0:
     enc = gd.create_box_encoder(infr.ext_choice["ext_mode"]["path"], batch_size=32)
   elif ext_mode in range(1, len(infr.ext_choice)):
-    enc = fec.create_feat_ext(infr.ext_choice[ext_mode]["name"], infr.ext_choice[ext_mode]["path")
+    enc = fec.create_feat_ext(infr.ext_choice[ext_mode]["name"], infr.ext_choice[ext_mode]["path"])
   else:
     print("Error")
-  output_dir = f"result/{infr.det_choice[det_mode]["short"]}_{infr.ext_choice[ext_mode]["short"]}/data"
+  output_dir = f"result/{infr.det_choice[det_mode]['short']}_{infr.ext_choice[ext_mode]['short']}/data"
   return det_mode, enc, output_dir
 
 # def parse_args():
