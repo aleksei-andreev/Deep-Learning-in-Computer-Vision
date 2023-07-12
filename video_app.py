@@ -203,7 +203,7 @@ def run(mode, enc, sequence_dir, output_file, min_confidence,
         # detections = create_detections(
         #     seq_info["detections"], frame_idx, min_detection_height)
         # detections = [d for d in detections if d.confidence >= min_confidence]
-        dets = create_detections(dets, min_detection_height)
+        detections = create_detections(dets, min_detection_height)
 
         # Run non-maxima suppression.
         boxes = np.array([d.tlwh for d in detections])
