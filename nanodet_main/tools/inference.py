@@ -64,7 +64,7 @@ class Predictor(object):
         meta = dict(img_info=img_info, raw_img=img, img=img)
         # meta = self.pipeline(meta, self.cfg.data.val.input_size)
         meta = self.pipeline(None, meta, self.cfg.data.val.input_size)
-        meta["img"] = torch.from_numpy(meta["img"].transpose(2, 0, 1)).unsqueeze(0).to(self.device)
+        meta["img"] = torch.from_numpy(meta["img"].transpose(2, 0, 1)).to(self.device)
         meta = naive_collate([meta])
         meta["img"] = stack_batch_img(meta["img"], divisible=32)
         with torch.no_grad():
