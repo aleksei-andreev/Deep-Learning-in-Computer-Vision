@@ -186,7 +186,7 @@ def run(mode, enc, sequence_dir, output_file, min_confidence,
       global cap
       cap = cv2.VideoCapture(seq_info["vid"])
       if cap.isOpened() == False:
-        print("Error")
+        print("Error. Check the source video file")
 
     def frame_callback(vis, frame_idx):
         # print("Processing frame %05d" % frame_idx)
