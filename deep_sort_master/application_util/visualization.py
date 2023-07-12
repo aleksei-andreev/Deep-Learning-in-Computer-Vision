@@ -2,6 +2,7 @@
 import numpy as np
 import colorsys
 from .image_viewer import ImageViewer
+from tqdm.auto import tqdm
 
 
 def create_unique_color_float(tag, hue_step=0.41):
@@ -76,9 +77,12 @@ class NoVisualization(object):
         pass
 
     def run(self, frame_callback):
+        progress = tqdm(total=self.last_idx)
         while self.frame_idx <= self.last_idx:
             frame_callback(self, self.frame_idx)
             self.frame_idx += 1
+            progress.update(1)
+        progress.close()
 
 
 class Visualization(object):
@@ -95,15 +99,18 @@ class Visualization(object):
         self.viewer.thickness = 2
         self.frame_idx = seq_info["min_frame_idx"]
         self.last_idx = seq_info["max_frame_idx"]
+        self.progress = tqdm(total=self.last_idx)
 
     def run(self, frame_callback):
         self.viewer.run(lambda: self._update_fun(frame_callback))
 
     def _update_fun(self, frame_callback):
         if self.frame_idx > self.last_idx:
+            self.progress.close()
             return False  # Terminate
         frame_callback(self, self.frame_idx)
         self.frame_idx += 1
+        self.progress.update(1)
         return True
 
     def set_image(self, image):
