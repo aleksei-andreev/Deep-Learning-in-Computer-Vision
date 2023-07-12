@@ -278,6 +278,7 @@ def setup():
   else:
     print("Error")
   output_dir = f"result/{infr.det_choice[det_mode]['short']}_{infr.ext_choice[ext_mode]['short']}/data"
+  os.makedirs(output_dir, exist_ok=True)
   return det_mode, enc, output_dir
 
 # def parse_args():
