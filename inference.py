@@ -9,9 +9,9 @@ from nanodet_main.nanodet.util import cfg, load_config
 from YOLOX_main.yolox.exp.build import get_exp_by_file
 
 det_choice = {
-  0: {"model":"None", "config":"None", "descr":"MOT benchmarks", "short":"MOT"},
-  1: {"model":"weights/nanodet-plus-m_416.pth", "config":"nanodet_main/config/nanodet-plus-m_416.yml", "descr":"NanoDet-Plus-M", "short":"nanodet_plus_m"},
-  2: {"model":"weights/nanodet-plus-m-1.5x_416.pth", "config":"nanodet_main/config/nanodet-plus-m-1.5x_416.yml", "descr":"NanoDet-Plus-M-1.5x", "short":"nanodet_plus_m_1.5x"},
+  0: {"model":"None", "config":"None", "descr":"MOT Benchmarks", "short":"mot"},
+  1: {"model":"weights/nanodet-plus-m_416.pth", "config":"nanodet_main/config/nanodet-plus-m_416.yml", "descr":"NanoDet-Plus-Medium", "short":"nanodet_plus_m"},
+  2: {"model":"weights/nanodet-plus-m-1.5x_416.pth", "config":"nanodet_main/config/nanodet-plus-m-1.5x_416.yml", "descr":"NanoDet-Plus-Medium-1.5x", "short":"nanodet_plus_m_1.5x"},
   3: {"model":"weights/yolox_tiny.pth", "config":"YOLOX_main/exps/default/yolox_tiny.py", "descr":"YOLOX-Tiny", "short":"yolox_tiny"},
   4: {"model":"weights/yolox_l.pth", "config":"YOLOX_main/exps/default/yolox_l.py", "descr":"YOLOX-Large", "short":"yolox_l"},
   5: {"model":"weights/mask_rcnn.pk1", "config":"COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml", "descr":"Mask R-CNN (R50-FPN)", "short":"mask_rcnn"},
