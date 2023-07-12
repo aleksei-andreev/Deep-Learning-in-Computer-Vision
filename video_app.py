@@ -12,7 +12,6 @@ from deep_sort_master.deep_sort import nn_matching
 from deep_sort_master.deep_sort.detection import Detection
 from deep_sort_master.deep_sort.tracker import Tracker
 import deep_sort_master.tools.generate_detections as gd
-from inference import FeatureExtractorCustom as fec
 import inference as infr
 
 
@@ -275,7 +274,7 @@ def setup():
   if ext_mode == 0:
     enc = gd.create_box_encoder(infr.ext_choice["ext_mode"]["path"], batch_size=32)
   elif ext_mode in range(1, len(infr.ext_choice)):
-    enc = fec.create_feat_ext(infr.ext_choice[ext_mode]["name"], infr.ext_choice[ext_mode]["path"])
+    enc = infr.create_feat_ext(infr.ext_choice[ext_mode]["name"], infr.ext_choice[ext_mode]["path"])
   else:
     print("Error")
   output_dir = f"result/{infr.det_choice[det_mode]['short']}_{infr.ext_choice[ext_mode]['short']}/data"
