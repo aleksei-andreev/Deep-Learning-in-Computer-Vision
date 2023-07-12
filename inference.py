@@ -12,10 +12,10 @@ from YOLOX_main.tools.inference import Predictor
 
 det_choice = {
   0: {"model":"None", "config":"None", "descr":"MOT benchmarks", "short":"MOT"},
-  1: {"model":"model_weights/nanodet-plus-m_416.pth", "config":"nanodet_main/config/nanodet-plus-m_416.yml", "descr":"NanoDet-Plus-M", "short":"nanodet_plus_m"},
-  2: {"model":"model_weights/nanodet-plus-m-1.5x_416.pth", "config":"nanodet_main/config/nanodet-plus-m-1.5x_416.yml", "descr":"NanoDet-Plus-M-1.5x", "nanodet_plus_m_1.5x"},
-  3: {"model":"model_weights/yolox_tiny.pth", "config":"YOLOX_main/exps/default/yolox_tiny.py", "descr":"YOLOX-Tiny", "short":"yolox_tiny"},
-  4: {"model":"model_weights/yolox_l.pth", "config":"YOLOX_main/exps/default/yolox_l.py", "descr":"YOLOX-Large", "short":"yolox_l"},
+  1: {"model":"model_weights/nanodet-plus-m_416.pth", "config":"nanodet-main/config/nanodet-plus-m_416.yml", "descr":"NanoDet-Plus-M", "short":"nanodet_plus_m"},
+  2: {"model":"model_weights/nanodet-plus-m-1.5x_416.pth", "config":"nanodet-main/config/nanodet-plus-m-1.5x_416.yml", "descr":"NanoDet-Plus-M-1.5x", "short":"nanodet_plus_m_1.5x"},
+  3: {"model":"model_weights/yolox_tiny.pth", "config":"YOLOX-main/exps/default/yolox_tiny.py", "descr":"YOLOX-Tiny", "short":"yolox_tiny"},
+  4: {"model":"model_weights/yolox_l.pth", "config":"YOLOX-main/exps/default/yolox_l.py", "descr":"YOLOX-Large", "short":"yolox_l"},
   5: {"model":"model_weights/mask_rcnn.pk1", "config":"COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml", "descr":"Mask R-CNN (R50-FPN)", "short":"mask_rcnn"},
   6: {"model":"model_weights/cascade_mask_rcnn.pk1", "config":"Misc/cascade_mask_rcnn_R_50_FPN_3x.yaml", "descr":"Cascade Mask R-CNN (R50-FPN)", "short":"cascade_mask_rcnn"}
 }
@@ -44,7 +44,7 @@ def detector(mode, choice, dir, thresh):
       def inference(self, img):
         mask = self.frames == self.frame
         res = self.dets[mask]
-        res = res[res[:, 4] > self.thresh
+        res = res[res[:, 4] > self.thresh]
         self.frame += 1
         return res
 
@@ -103,7 +103,7 @@ class FeatureExtractorCustom():
     self.extractor = FeatureExtractor(model_name=name, model_path=path, device="cuda" if torch.cuda.is_available() else "cpu")
 
   def __call__(self, img, bbxs):
-    bbxs = np.array(bbxs):
+    bbxs = np.array(bbxs)
     bbxs[:, 2] += bbxs[:, 0]
     bbxs[:, 3] += bbxs[:, 1]
     bbxs = bbxs.astype(int)
