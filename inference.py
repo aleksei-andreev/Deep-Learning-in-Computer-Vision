@@ -10,22 +10,22 @@ from YOLOX_main.yolox.exp.build import get_exp_by_file
 
 det_choice = {
   0: {"model":"None", "config":"None", "descr":"MOT benchmarks", "short":"MOT"},
-  1: {"model":"model_weights/nanodet-plus-m_416.pth", "config":"nanodet_main/config/nanodet-plus-m_416.yml", "descr":"NanoDet-Plus-M", "short":"nanodet_plus_m"},
-  2: {"model":"model_weights/nanodet-plus-m-1.5x_416.pth", "config":"nanodet_main/config/nanodet-plus-m-1.5x_416.yml", "descr":"NanoDet-Plus-M-1.5x", "short":"nanodet_plus_m_1.5x"},
-  3: {"model":"model_weights/yolox_tiny.pth", "config":"YOLOX_main/exps/default/yolox_tiny.py", "descr":"YOLOX-Tiny", "short":"yolox_tiny"},
-  4: {"model":"model_weights/yolox_l.pth", "config":"YOLOX_main/exps/default/yolox_l.py", "descr":"YOLOX-Large", "short":"yolox_l"},
-  5: {"model":"model_weights/mask_rcnn.pk1", "config":"COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml", "descr":"Mask R-CNN (R50-FPN)", "short":"mask_rcnn"},
-  6: {"model":"model_weights/cascade_mask_rcnn.pk1", "config":"Misc/cascade_mask_rcnn_R_50_FPN_3x.yaml", "descr":"Cascade Mask R-CNN (R50-FPN)", "short":"cascade_mask_rcnn"}
+  1: {"model":"weights/nanodet-plus-m_416.pth", "config":"nanodet_main/config/nanodet-plus-m_416.yml", "descr":"NanoDet-Plus-M", "short":"nanodet_plus_m"},
+  2: {"model":"weights/nanodet-plus-m-1.5x_416.pth", "config":"nanodet_main/config/nanodet-plus-m-1.5x_416.yml", "descr":"NanoDet-Plus-M-1.5x", "short":"nanodet_plus_m_1.5x"},
+  3: {"model":"weights/yolox_tiny.pth", "config":"YOLOX_main/exps/default/yolox_tiny.py", "descr":"YOLOX-Tiny", "short":"yolox_tiny"},
+  4: {"model":"weights/yolox_l.pth", "config":"YOLOX_main/exps/default/yolox_l.py", "descr":"YOLOX-Large", "short":"yolox_l"},
+  5: {"model":"weights/mask_rcnn.pk1", "config":"COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml", "descr":"Mask R-CNN (R50-FPN)", "short":"mask_rcnn"},
+  6: {"model":"weights/cascade_mask_rcnn.pk1", "config":"Misc/cascade_mask_rcnn_R_50_FPN_3x.yaml", "descr":"Cascade Mask R-CNN (R50-FPN)", "short":"cascade_mask_rcnn"}
 }
 
 ext_choice = {
-  0: {"path":"model_weights/mars-small128.pb", "name":"None", "descr":"Default DeepSORT Feature Extractor", "short":"default"},
-  1: {"path":"model_weights/shufflenet.pth.tar", "name":"shufflenet", "descr":"ShuffleNet", "short":"shufflenet"},
-  2: {"path":"model_weights/mlfn.pth.tar", "name":"mlfn", "descr":"Multilayer Feedforward Neural Network", "short":"mlfn"},
-  3: {"path":"model_weights/mobilenetv2.pth", "name":"mobilenetv2_x1_0", "descr":"MobileNetV2", "short":"mobilenetv2"},
-  4: {"path":"model_weights/osnet.pth", "name":"osnet_x1_0", "descr":"OSNet", "short":"osnet"},
-  5: {"path":"model_weights/osnet_ain.pth", "name":"osnet_ain_x1_0", "descr":"OSNet-AIN", "short":"osnet_ain"},
-  6: {"path":"model_weights/osnet_ibn.pth", "name":"osnet_ibn_x1_0", "descr":"OSNet-IBN", "short":"osnet_ibn"},
+  0: {"path":"weights/mars-small128.pb", "name":"None", "descr":"Default DeepSORT Feature Extractor", "short":"default"},
+  1: {"path":"weights/shufflenet.pth.tar", "name":"shufflenet", "descr":"ShuffleNet", "short":"shufflenet"},
+  2: {"path":"weights/mlfn.pth.tar", "name":"mlfn", "descr":"Multilayer Feedforward Neural Network", "short":"mlfn"},
+  3: {"path":"weights/mobilenetv2.pth", "name":"mobilenetv2_x1_0", "descr":"MobileNetV2", "short":"mobilenetv2"},
+  4: {"path":"weights/osnet.pth", "name":"osnet_x1_0", "descr":"OSNet", "short":"osnet"},
+  5: {"path":"weights/osnet_ain.pth", "name":"osnet_ain_x1_0", "descr":"OSNet-AIN", "short":"osnet_ain"},
+  6: {"path":"weights/osnet_ibn.pth", "name":"osnet_ibn_x1_0", "descr":"OSNet-IBN", "short":"osnet_ibn"},
 }
 
 def detector(mode, choice, seq_dir, thresh):
