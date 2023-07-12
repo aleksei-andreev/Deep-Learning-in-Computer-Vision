@@ -263,21 +263,23 @@ def bool_string(input_string):
 
 
 def setup():
-  det_msg = ("\nMake your choice among detection and segmentation models:\n" + "".join([f"{k}. {infr.det_choice[k]['descr']}.\n" for k in infr.det_choice]))
+  det_msg = ("\nMake your choice among detection and segmentation models:\n" + "".join([f"{k}. {infr.det_choice[k]['descr']}\n" for k in infr.det_choice]))
   det_mode = int(input(det_msg))
   if det_mode not in range(len(infr.det_choice)):
     print("Error. Not in range")
-  ext_msg = ("\n Make your choice among ReID models:\n" + "".join([f"{k}. {infr.ext_choice[k]['descr']}.\n" for k in infr.ext_choice]))
+  print(f"{infr.det_choice[det_mode]['descr']} was chosen")
+  ext_msg = ("\n Make your choice among ReID models:\n" + "".join([f"{k}. {infr.ext_choice[k]['descr']}\n" for k in infr.ext_choice]))
   ext_mode = int(input(ext_msg))
   if ext_mode not in range(len(infr.ext_choice)):
     print("Error. Not in range")
+  print(f"{infr.ext_choice[ext_mode]['descr']} was chosen\n")
   if ext_mode == 0:
     enc = gd.create_box_encoder(infr.ext_choice["ext_mode"]["path"], batch_size=32)
   elif ext_mode in range(1, len(infr.ext_choice)):
     enc = infr.create_feat_ext(infr.ext_choice[ext_mode]["name"], infr.ext_choice[ext_mode]["path"])
   else:
     print("Error")
-  output_dir = f"result/{infr.det_choice[det_mode]['short']}_{infr.ext_choice[ext_mode]['short']}/data"
+  output_dir = f"result/{infr.det_choice[det_mode]['short']}_{infr.ext_choice[ext_mode]['short']}"
   os.makedirs(output_dir, exist_ok=True)
   return det_mode, enc, output_dir
 
