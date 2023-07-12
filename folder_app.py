@@ -36,7 +36,7 @@ def parse_args(args=None):
         "gallery. If None, no budget is enforced.", type=int, default=100)
     parser.add_argument(
         "--display", help="Results",
-        default=True, type=vid_app.bool_string)
+        default=True, type=video_app.bool_string)
     if not args:
       return parser.parse_args()
     # return parser.parse_args()
@@ -55,7 +55,7 @@ def main(args):
         if not os.path.isdir(sequence_dir):
           continue
         print("Running sequence %s" % sequence)
-        vid_app.run(
+        video_app.run(
             mode, enc, sequence_dir, output_file, args.min_confidence,
             args.nms_max_overlap, args.min_detection_height,
             args.max_cosine_distance, args.nn_budget, args.display)
