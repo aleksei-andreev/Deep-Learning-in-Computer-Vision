@@ -44,7 +44,7 @@ def parse_args(args=None):
 
 
 def main(args):
-    mode, enc, output_dir = vid_app.setup()
+    mode, enc, output_dir = video_app.setup()
     # os.makedirs(args.output_dir, exist_ok=True)
     sequences = os.listdir(args.mot_dir)
     for sequence in sequences:
