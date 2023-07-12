@@ -274,7 +274,7 @@ def setup():
     print("Error. Not in range")
   print(f"{infr.ext_choice[ext_mode]['descr']} was chosen\n")
   if ext_mode == 0:
-    enc = gd.create_box_encoder(infr.ext_choice["ext_mode"]["path"], batch_size=32)
+    enc = gd.create_box_encoder(infr.ext_choice[ext_mode]["path"], batch_size=32)
   elif ext_mode in range(1, len(infr.ext_choice)):
     enc = infr.create_feat_ext(infr.ext_choice[ext_mode]["name"], infr.ext_choice[ext_mode]["path"])
   else:
