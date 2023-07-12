@@ -264,9 +264,9 @@ def bool_string(input_string):
 
 
 def setup():
-  det_msg = ("\nMake your choice among detection and segmentation models:\n" + "".join([f"{k}. {infr.det_choice[k]['descr']}.\n" for k in det_choice]))
+  det_msg = ("\nMake your choice among detection and segmentation models:\n" + "".join([f"{k}. {infr.det_choice[k]['descr']}.\n" for k in infr.det_choice]))
   det_mode = int(input(det_msg))
-  if det_mode not in range(len(det_choice)):
+  if det_mode not in range(len(infr.det_choice)):
     print("Error. Not in range")
   ext_msg = ("\n Make your choice among ReID models:\n" + "".join([f"{k}. {infr.ext_choice[k]['descr']}.\n" for k in ext_choice]))
   ext_mode = int(input(ext_msg))
