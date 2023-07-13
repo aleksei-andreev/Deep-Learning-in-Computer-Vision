@@ -279,7 +279,7 @@ def setup():
     enc = infr.create_feat_ext(infr.ext_choice[ext_mode]["name"], infr.ext_choice[ext_mode]["path"])
   else:
     print("Error")
-  output_dir = f"results/{infr.det_choice[det_mode]['short']}_{infr.ext_choice[ext_mode]['short']}"
+  output_dir = f"results/{infr.det_choice[det_mode]['short']}_{infr.ext_choice[ext_mode]['short']}/data"
   os.makedirs(output_dir, exist_ok=True)
   return det_mode, enc, output_dir
 
