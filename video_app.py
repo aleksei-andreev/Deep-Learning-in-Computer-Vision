@@ -268,7 +268,7 @@ def setup():
   if det_mode not in range(len(infr.det_choice)):
     print("Error. Not in range")
   print(f"{infr.det_choice[det_mode]['descr']} was chosen")
-  ext_msg = ("\n Make your choice among ReID models:\n" + "".join([f"{k}. {infr.ext_choice[k]['descr']}\n" for k in infr.ext_choice]))
+  ext_msg = ("\nMake your choice among ReID models:\n" + "".join([f"{k}. {infr.ext_choice[k]['descr']}\n" for k in infr.ext_choice]))
   ext_mode = int(input(ext_msg))
   if ext_mode not in range(len(infr.ext_choice)):
     print("Error. Not in range")
