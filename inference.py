@@ -93,8 +93,12 @@ def detector(mode, choice, seq_dir, thresh):
         bbxs[:, 3] -= bbxs[:, 1]
         scrs = output["instances"].scores.cpu().numpy()
         h, _ = bbxs.shape
-        output = np.c_[-np.ones((h, 2)), bbxs, scrs, -np.ones((h, 3))]
-        return output
+        output_np = np.c_[-np.ones((h, 2)), bbxs, scrs, -np.ones((h, 3))]
+        masks = output["instances"].pred_masks.cpu().numpy()
+        for i in range(masks.shape[0]):
+          mask = masks[i, :, :]
+          img[mask] = [0, 255, 0]
+        return output_np
 
     det = Det_Predictor(cfg, thresh)
     return det
