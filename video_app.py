@@ -11,6 +11,7 @@ from deep_sort_master.application_util import visualization
 from deep_sort_master.deep_sort import nn_matching
 from deep_sort_master.deep_sort.detection import Detection
 from deep_sort_master.deep_sort.tracker import Tracker
+from scipy.spatial.distance import cdist
 import deep_sort_master.tools.generate_detections as gd
 import inference as infr
 
@@ -143,7 +144,7 @@ def create_detections(detections, min_height=0):
 #         nn_budget, display):
 def run(mode, enc, sequence_dir, output_file, min_confidence,
         nms_max_overlap, min_detection_height, max_cosine_distance,
-        nn_budget, display):
+        nn_budget, display, body_reid):
     """Run multi-target tracker on a particular sequence.
 
     Parameters
@@ -172,6 +173,8 @@ def run(mode, enc, sequence_dir, output_file, min_confidence,
         If True, show visualization of intermediate tracking results.
 
     """
+    global database
+    database = []
     # seq_info = gather_sequence_info(sequence_dir, detection_file)
     seq_info = gather_sequence_info(sequence_dir)
     metric = nn_matching.NearestNeighborDistanceMetric(
@@ -188,6 +191,13 @@ def run(mode, enc, sequence_dir, output_file, min_confidence,
       if cap.isOpened() == False:
         print("Error. Check the source video file")
 
+    if body_reid:
+      log_dir = os.path.dirname(output_file)
+      log_basename = os.path.splitext(os.path.basename(output_file))[0]
+      log_file_name = log_basename + "_identity_log.txt"
+      log_file_path = os.path.join(log_dir, log_file_name)
+      file = open(log_file_path, "w")
+    
     def frame_callback(vis, frame_idx):
         # print("Processing frame %05d" % frame_idx)
         if COLAB:
@@ -204,6 +214,9 @@ def run(mode, enc, sequence_dir, output_file, min_confidence,
         #     seq_info["detections"], frame_idx, min_detection_height)
         # detections = [d for d in detections if d.confidence >= min_confidence]
         detections = create_detections(dets, min_detection_height)
+        if body_reid:
+          for detection in detections:
+            detection.identity = find_identity(database, detection.feature)
 
         # Run non-maxima suppression.
         boxes = np.array([d.tlwh for d in detections])
@@ -214,7 +227,15 @@ def run(mode, enc, sequence_dir, output_file, min_confidence,
 
         # Update tracker.
         tracker.predict()
-        tracker.update(detections)
+        if body_reid:
+          tracker.update(detections, frame_idx, body_reid)
+          tracker.resolve_identities(frame_idx)
+          for track in tracker.tracks:
+            if track.is_confirmed():
+              identity_info = f"Frame: {frame_idx}, Track ID: {track.track_id}, Identity: {track.identity}\n"
+              file.write(identity_info)
+        else:
+          tracker.update(detections)
 
         # Store results.
         for track in tracker.tracks:
@@ -241,6 +262,10 @@ def run(mode, enc, sequence_dir, output_file, min_confidence,
     else:
         visualizer = visualization.NoVisualization(seq_info)
     visualizer.run(frame_callback)
+
+    if body_reid:
+      file.close()
+    
     if COLAB:
       cap.release()
 
@@ -249,6 +274,18 @@ def run(mode, enc, sequence_dir, output_file, min_confidence,
     for row in results:
         print('%d,%d,%.2f,%.2f,%.2f,%.2f,1,-1,-1,-1' % (
             row[0], row[1], row[2], row[3], row[4], row[5]),file=f)
+
+
+def find_identity(database, feature, threshold=0.5):
+  if len(database) > 0:
+    features = [entry["feature"] for entry in database]
+    distances = cdist(features, [feature], "cosine")[0]
+    idx = np.argmin(distances)
+    if distances[idx] < threshold:
+      return database[idx]["id"]
+  new_id = len(database)
+  database.append({"id": new_id, "feature": feature})
+  return new_id
 
 
 def colab():
@@ -273,6 +310,15 @@ def setup():
   if ext_mode not in range(len(infr.ext_choice)):
     print("Error. Not in range")
   print(f"{infr.ext_choice[ext_mode]['descr']} was chosen\n")
+  body_reid_msg = ("\nMake your choice whether to activate body ReID or not:\n" + "0. No\n" + "1. Yes\n")
+  body_reid_mode = int(input(body_reid_msg))
+  if body_reid_mode not in range(2):
+    print("Error. Not in range")
+  body_reid = True if body_reid_mode == 1 else False
+  if body_reid:
+    print("You have activated body ReID")
+  else:
+    print("You haven't activated body ReID")
   if ext_mode == 0:
     enc = gd.create_box_encoder(infr.ext_choice[ext_mode]["path"], batch_size=32)
   elif ext_mode in range(1, len(infr.ext_choice)):
@@ -281,7 +327,7 @@ def setup():
     print("Error")
   output_dir = f"results/{infr.det_choice[det_mode]['short']}_{infr.ext_choice[ext_mode]['short']}/data"
   os.makedirs(output_dir, exist_ok=True)
-  return det_mode, enc, output_dir
+  return det_mode, enc, output_dir, body_reid
 
 # def parse_args():
 def parse_args(args=None):
@@ -323,9 +369,9 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 def main(args):
-  mode, enc, output_dir = setup()
+  mode, enc, output_dir, body_reid = setup()
   output_file = os.path.join(output_dir, f"{os.path.basename(args.sequence_dir)}.txt")
-  run(mode, enc, args.sequence_dir, output_file, args.min_confidence, args.nms_max_overlap, args.min_detection_height, args.max_cosine_distance, args.nn_budget, args.display)
+  run(mode, enc, args.sequence_dir, output_file, args.min_confidence, args.nms_max_overlap, args.min_detection_height, args.max_cosine_distance, args.nn_budget, args.display, body_reid)
 
 def run_vid(vid, display="True"):
   main(parse_args([f"--sequence_dir=./MOT/{vid}", f"--display={display}"]))

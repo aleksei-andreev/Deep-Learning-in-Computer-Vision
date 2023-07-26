@@ -5,6 +5,7 @@ from . import kalman_filter
 from . import linear_assignment
 from . import iou_matching
 from .track import Track
+from collections import Counter
 
 
 class Tracker:
@@ -55,7 +56,7 @@ class Tracker:
         for track in self.tracks:
             track.predict(self.kf)
 
-    def update(self, detections):
+    def update(self, detections, frame_idx=None, body_reid=False):
         """Perform measurement update and track management.
 
         Parameters
@@ -64,18 +65,25 @@ class Tracker:
             A list of detections at the current time step.
 
         """
+        
+        detections_copy = detections.copy()
+        
         # Run matching cascade.
-        matches, unmatched_tracks, unmatched_detections = \
-            self._match(detections)
+        if body_reid:
+            matches, unmatched_tracks, unmatched_detections = \
+                self._match(detections, body_reid)
+        else:
+            matches, unmatched_tracks, unmatched_detections = \
+                self._match(detections_copy)
 
         # Update track set.
         for track_idx, detection_idx in matches:
             self.tracks[track_idx].update(
-                self.kf, detections[detection_idx])
+                self.kf, detections_copy[detection_idx])
         for track_idx in unmatched_tracks:
             self.tracks[track_idx].mark_missed()
         for detection_idx in unmatched_detections:
-            self._initiate_track(detections[detection_idx])
+            self._initiate_track(detections_copy[detection_idx])
         self.tracks = [t for t in self.tracks if not t.is_deleted()]
 
         # Update distance metric.
@@ -89,8 +97,24 @@ class Tracker:
             track.features = []
         self.metric.partial_fit(
             np.asarray(features), np.asarray(targets), active_targets)
+        if body_reid:
+            for track in self.tracks:
+                track.identity = track.get_identity()
+        if frame_idx is not None:
+            for track in self.tracks:
+                if track.is_confirmed() and track.time_since_update == 0:
+                    for detection in detections_copy:
+                        track.update_identity(detection.identity, frame_idx)
 
-    def _match(self, detections):
+    def resolve_identities(self, current_timestamp, time_window=1):
+        active_identities = [track.get_majority_identity(current_timestamp, time_window)
+                             for track in self.tracks if track.is_confirmed()]
+        counts = Counter(active_identities)
+        for track in self.tracks:
+            if counts[track.identity] > 1:
+                track.identity = None
+
+    def _match(self, detections, body_reid=False):
 
         def gated_metric(tracks, dets, track_indices, detection_indices):
             features = np.array([dets[i].feature for i in detection_indices])
@@ -128,6 +152,11 @@ class Tracker:
 
         matches = matches_a + matches_b
         unmatched_tracks = list(set(unmatched_tracks_a + unmatched_tracks_b))
+        if body_reid:
+            for track_idx, detection_idx in matches:
+                track = self.tracks[track_idx]
+                detection = detections[detection_idx]
+                track.update(self.kf, detection)
         return matches, unmatched_tracks, unmatched_detections
 
     def _initiate_track(self, detection):

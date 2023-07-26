@@ -44,7 +44,7 @@ def parse_args(args=None):
 
 
 def main(args):
-    mode, enc, output_dir = video_app.setup()
+    mode, enc, output_dir, body_reid = video_app.setup()
     # os.makedirs(args.output_dir, exist_ok=True)
     sequences = os.listdir(args.mot_dir)
     for sequence in sequences:
@@ -58,7 +58,7 @@ def main(args):
         video_app.run(
             mode, enc, sequence_dir, output_file, args.min_confidence,
             args.nms_max_overlap, args.min_detection_height,
-            args.max_cosine_distance, args.nn_budget, args.display)
+            args.max_cosine_distance, args.nn_budget, args.display, body_reid)
 
 
 def run_fold(path="./MOT", display="True"):

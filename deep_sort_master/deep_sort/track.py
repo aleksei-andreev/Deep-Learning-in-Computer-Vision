@@ -1,4 +1,6 @@
 # vim: expandtab:ts=4:sw=4
+from collections import Counter
+import time
 
 
 class TrackState:
@@ -64,7 +66,7 @@ class Track:
     """
 
     def __init__(self, mean, covariance, track_id, n_init, max_age,
-                 feature=None):
+                 feature=None, class_name=None):
         self.mean = mean
         self.covariance = covariance
         self.track_id = track_id
@@ -79,6 +81,20 @@ class Track:
 
         self._n_init = n_init
         self._max_age = max_age
+        self.class_name = class_name
+        self.identities = []
+        self.identity_history = []
+
+    def update_identity(self, identity, timestamp):
+        self.identity_history.append((identity, timestamp))
+
+    def get_majority_identity(self, current_timestamp, time_window):
+        recent_identities = [identity for identity, timestamp in self.identity_history
+                             if current_timestamp - timestamp <= time_window]
+        try:
+            return max(set(recent_identities), key=recent_identities.count)
+        except ValueError:
+            return None
 
     def to_tlwh(self):
         """Get current position in bounding box format `(top left x, top left y,
@@ -143,6 +159,12 @@ class Track:
         self.time_since_update = 0
         if self.state == TrackState.Tentative and self.hits >= self._n_init:
             self.state = TrackState.Confirmed
+        self.identities.append((detection.identity, time.time()))
+
+    def get_identity(self, T=1):
+        cutoff_time = time.time() - T
+        recent_identities = [identity for identity, timestamp in self.identities if timestamp > cutoff_time]
+        return Counter(recent_identities).most_common(1)[0][0] if recent_identities else None
 
     def mark_missed(self):
         """Mark this track as missed (no association at the current time step).
